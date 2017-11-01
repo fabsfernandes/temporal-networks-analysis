@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>br.ufu.lsi</groupId>
+	<artifactId>node-event-detection</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<dependencies>
+		<!-- https://mvnrepository.com/artifact/org.gephi/graph-api -->
+		<dependency>
+			<groupId>org.gephi</groupId>
+			<artifactId>graph-api</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.gephi/gephi-toolkit -->
+		<dependency>
+			<groupId>org.gephi</groupId>
+			<artifactId>gephi-toolkit</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.gephi/io-importer-api -->
+		<dependency>
+			<groupId>org.gephi</groupId>
+			<artifactId>io-importer-api</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.gephi</groupId>
+			<artifactId>io-importer-plugin</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.gephi/statistics-plugin -->
+		<dependency>
+			<groupId>org.gephi</groupId>
+			<artifactId>statistics-plugin</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.6</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.moa/moa -->
+		<dependency>
+			<groupId>nz.ac.waikato.cms.moa</groupId>
+			<artifactId>moa</artifactId>
+			<version>2016.04</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+		</dependency>
+	</dependencies>
+
+</project>
