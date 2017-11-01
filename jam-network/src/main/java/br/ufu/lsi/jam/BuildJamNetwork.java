@@ -25,9 +25,9 @@ public class BuildJamNetwork {
     
     private static final String NODES = "/Users/fabiola/Desktop/MLJournal/this-is-my-jam/nodes.csv";
     
-    private static final String FILTER1 = "2014-12-31";
+    private static final String FILTER1 = "2004-12-31";
     
-    private static final String FILTER2 = "2015-02-01";
+    private static final String FILTER2 = "2035-02-01";
     
     private static Map<String,User> jams = new HashMap<String,User>();
     

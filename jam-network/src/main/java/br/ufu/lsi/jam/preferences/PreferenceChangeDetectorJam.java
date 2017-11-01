@@ -105,9 +105,6 @@ public class PreferenceChangeDetectorJam {
              // slides
              previousBTG = currentBTG;
         }
-        
-        
-        
     }
     
 }
