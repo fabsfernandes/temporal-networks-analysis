@@ -32,15 +32,15 @@ public class NodeEventDetection {
     private static String NODEID = "14594813";
     
     
-    /*public NodeEventDetection( DirectedGraph directedGraph, Map< String, Node > nodes ) {
+    public NodeEventDetection( DirectedGraph directedGraph, Map< String, Node > nodes ) {
     
         networkHandler = new NetworkHandler( directedGraph );
-    }*/
+    }
     
-    public NodeEventDetection( UndirectedGraph undirectedGraph, Map< String, Node > nodes ) {
+    /*public NodeEventDetection( UndirectedGraph undirectedGraph, Map< String, Node > nodes ) {
         
         networkHandler = new NetworkHandler( undirectedGraph );
-    }
+    }*/
     
     public void setParams(double threshold, double alpha, String nodeID ){
         THRESHOLD = threshold;

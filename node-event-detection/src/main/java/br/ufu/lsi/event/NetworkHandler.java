@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.gephi.graph.api.DirectedGraph;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.EdgeIterable;
 import org.gephi.graph.api.Node;
@@ -14,18 +15,18 @@ import org.gephi.statistics.plugin.GraphDistance;
 
 public class NetworkHandler {
     
-    //DirectedGraph directedGraph;
-    UndirectedGraph directedGraph;
+    DirectedGraph directedGraph;
+    //UndirectedGraph directedGraph;
     
-    /*public NetworkHandler( DirectedGraph directedGraph ) {
+    public NetworkHandler( DirectedGraph directedGraph ) {
         this.directedGraph = directedGraph;   
-    }*/
+    }
     
-    public NetworkHandler( UndirectedGraph undirectedGraph ) {
+    /*public NetworkHandler( UndirectedGraph undirectedGraph ) {
         this.directedGraph = undirectedGraph;
         
         
-    }
+    }*/
     
     public void insertNodes( Map< String, Node > nodes ) {
         

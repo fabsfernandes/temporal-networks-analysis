@@ -60,8 +60,8 @@ public class Main {
         //private static String NODEID = "279635698";
         //private static String NODEID = "58488491";
         
-        //NodeEventDetection nodeEventDetection = new NodeEventDetection( main.graphModel.getDirectedGraph(), main.nodes );
-        NodeEventDetection nodeEventDetection = new NodeEventDetection( main.graphModel.getUndirectedGraph(), main.nodes );
+        NodeEventDetection nodeEventDetection = new NodeEventDetection( main.graphModel.getDirectedGraph(), main.nodes );
+        //NodeEventDetection nodeEventDetection = new NodeEventDetection( main.graphModel.getUndirectedGraph(), main.nodes );
         nodeEventDetection.setParams( threshold, alpha, nodeId );
         nodeEventDetection.sketchAlgorithm( main.edgesList );
     }
