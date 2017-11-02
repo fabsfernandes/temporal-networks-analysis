@@ -2,8 +2,10 @@
 package br.ufu.lsi.jam.centralities;
 
 import java.io.BufferedReader;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.GraphController;
@@ -17,11 +19,13 @@ import br.ufu.lsi.event.utils.FileUtil;
 
 public class StaticCentralities {
 
-    private static String NODES_FILE = "";
+    private static String NODES_FILE = "/Users/fabiola/Desktop/MLJournal/this-is-my-jam/nodes.csv";
 
-    private static String EDGES_FILE = "";
+    private static String EDGES_FILE = "/Users/fabiola/Desktop/MLJournal/this-is-my-jam/edges.csv";
 
     public static GraphModel graphModel;
+    
+    public static NetworkHandler networkHandler;
 
     public static Map< String, Node > nodes = new HashMap< String, Node >();
 
@@ -29,11 +33,50 @@ public class StaticCentralities {
 
     public static void main( String... args ) throws Exception {
         
-        NetworkHandler handler = new NetworkHandler( graphModel.getDirectedGraph() );
-        //handler.
+        
+        if( args.length > 0 ) {
+            NODES_FILE = args[0];
+            EDGES_FILE = args[1];
+        }
+        
+        
+        System.out.println( "Initializing workspace..." );
+        initializeWorkspace();
+        
+        System.out.println( "Loading network to main memory..." );
+        loadNetworkToMainMemory();
+        
+        System.out.println( "Update network..." );
+        updateNetwork();
+        
+        System.out.println( "Computing static centralities..." );
+        computeStaticCentralities();
+    }
+    
+    public static void computeStaticCentralities() {
+        
+        
+        networkHandler.computeDistances();
+        
+        
+        for( Entry<String,Node> entry : nodes.entrySet() ) {
+            BigDecimal betweenness = networkHandler.getBetweennessDirect( (String) entry.getValue().getId() );
+            BigDecimal closeness = networkHandler.getClosenessDirect( (String) entry.getValue().getId() );
+            System.out.println(  entry.getKey() + ";" + betweenness + ";" + closeness );
+        }
+    }
+    
+    public static void updateNetwork() throws Exception {
+        
+        networkHandler = new NetworkHandler( graphModel.getDirectedGraph() );
+        for( Entry<String,Edge> entry : edges.entrySet() ) {
+            
+            networkHandler.updateNetwork( entry.getValue() );
+        }
     }
 
-    public void initializeWorkspace() throws Exception {
+    
+    public static void initializeWorkspace() throws Exception {
 
         ProjectController pc = Lookup.getDefault().lookup( ProjectController.class );
         pc.newProject();
@@ -42,11 +85,10 @@ public class StaticCentralities {
         graphModel.getEdgeTable().addColumn( "timeInit", String.class );
         graphModel.getEdgeTable().addColumn( "timeEnd", String.class );
         graphModel.getEdgeTable().addColumn( "genre", String.class );
-
     }
     
     
-    public void loadNetworkToMainMemory(  ) throws Exception {
+    public static void loadNetworkToMainMemory(  ) throws Exception {
         
         loadNodes();
         loadEdges();
@@ -61,7 +103,7 @@ public class StaticCentralities {
         Collections.sort( edgesList );*/
     }
     
-    public void loadNodes() throws Exception {
+    public static void loadNodes() throws Exception {
 
         BufferedReader br = FileUtil.openInputFile( NODES_FILE );
 
@@ -82,13 +124,14 @@ public class StaticCentralities {
 
     }
 
-    public void loadEdges() throws Exception {
+    public static void loadEdges() throws Exception {
 
         BufferedReader br2 = FileUtil.openInputFile( EDGES_FILE );
        
         // with header
         String line2 = br2.readLine();
-
+        
+        int cont = 0;
         while ( ( line2 = br2.readLine() ) != null ) {
             String source = line2.split( ";" )[ 0 ];
             String target = line2.split( ";" )[ 1 ];
@@ -107,6 +150,8 @@ public class StaticCentralities {
             
             edges.put( source + "-" + target + "-" + timeInit, edge );
 
+            if( ++cont % 100000 == 0 )
+                System.out.println( cont );
         }
 
         br2.close();

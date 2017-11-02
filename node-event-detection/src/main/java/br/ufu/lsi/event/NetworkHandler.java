@@ -28,6 +28,12 @@ public class NetworkHandler {
         
     }*/
     
+    public void computeDistances() {
+        GraphDistance distance = new GraphDistance();
+        distance.setNormalized( true );
+        distance.execute( this.directedGraph );
+    }
+    
     public void insertNodes( Map< String, Node > nodes ) {
         
         for( Entry<String,Node> entry : nodes.entrySet() ) {
@@ -147,6 +153,31 @@ public class NetworkHandler {
         return bigDecimalBetweenness;
     }
     
+    
+    public BigDecimal getClosenessDirect( String nodeId ) {
+        
+        if( directedGraph.getNode( nodeId) == null )
+            return new BigDecimal( 0.0 );
+        
+        Double closeness = (Double) directedGraph.getNode( nodeId).getAttribute( GraphDistance.CLOSENESS );
+        //BigDecimal bigDecimalCloseness = BigDecimal.valueOf(closeness).setScale(7, RoundingMode.HALF_UP);
+        BigDecimal bigDecimalCloseness = BigDecimal.valueOf(closeness);
+        return bigDecimalCloseness;
+    }
+    
+    public BigDecimal getBetweennessDirect( String nodeId ) {
+        
+        if( directedGraph.getNode( nodeId) == null )
+            return new BigDecimal( 0.0 );
+        
+        Double betweenness = (Double) directedGraph.getNode( nodeId).getAttribute( GraphDistance.BETWEENNESS );
+        //BigDecimal bigDecimalBetweenness = BigDecimal.valueOf(betweenness).setScale(7, RoundingMode.HALF_UP);
+        BigDecimal bigDecimalBetweenness = BigDecimal.valueOf(betweenness);
+        return bigDecimalBetweenness;
+    }
+    
+    
+    
     public int getNodeCount() {
         return directedGraph.getNodeCount();
     }
@@ -154,6 +185,9 @@ public class NetworkHandler {
     public int getEdgeCount() {
         return directedGraph.getEdgeCount();
     }
+    
+    
+    
     
     
 
