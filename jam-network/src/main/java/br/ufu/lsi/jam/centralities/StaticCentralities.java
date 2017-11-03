@@ -2,8 +2,12 @@
 package br.ufu.lsi.jam.centralities;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -16,12 +20,22 @@ import org.openide.util.Lookup;
 
 import br.ufu.lsi.event.NetworkHandler;
 import br.ufu.lsi.event.utils.FileUtil;
+import br.ufu.lsi.jam.model.TimestampedEdge;
+import br.ufu.lsi.jam.utils.DateUtils;
+import br.ufu.lsi.jam.utils.Granularity;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class StaticCentralities {
 
     private static String NODES_FILE = "/Users/fabiola/Desktop/MLJournal/this-is-my-jam/nodes.csv";
 
     private static String EDGES_FILE = "/Users/fabiola/Desktop/MLJournal/this-is-my-jam/edges.csv";
+    
+    private static final String INIT = "2010-08-26";
+    
+    private static final String END = "2016-08-28";
+    
+    private static Granularity GRANULARITY = Granularity.YEAR;
 
     public static GraphModel graphModel;
     
@@ -30,6 +44,8 @@ public class StaticCentralities {
     public static Map< String, Node > nodes = new HashMap< String, Node >();
 
     public static Map< String, Edge > edges = new HashMap< String, Edge >();
+    
+    public static List<TimestampedEdge> orderedEdges = new ArrayList<TimestampedEdge>();
 
     public static void main( String... args ) throws Exception {
         
@@ -37,6 +53,17 @@ public class StaticCentralities {
         if( args.length > 0 ) {
             NODES_FILE = args[0];
             EDGES_FILE = args[1];
+            String granularity = args[2];
+            switch( granularity ) {
+                case "day": GRANULARITY = Granularity.DAY;
+                    break;
+                case "month": GRANULARITY = Granularity.MONTH;
+                    break;
+                case "semester": GRANULARITY = Granularity.SEMESTER;
+                    break;
+                case "year": GRANULARITY = Granularity.YEAR;
+                    break;
+            }
         }
         
         
@@ -49,31 +76,100 @@ public class StaticCentralities {
         System.out.println( "Update network..." );
         updateNetwork();
         
-        System.out.println( "Computing static centralities..." );
-        computeStaticCentralities();
+        System.out.println( "Printing result..." );
+        printResults();
+        
     }
     
-    public static void computeStaticCentralities() {
+    public static void printResults() throws Exception {
         
+        BufferedWriter bwClo = FileUtil.openOutputFile( NODES_FILE.replace( ".csv", GRANULARITY.toString() + "-CLO.csv" ) );
+        BufferedWriter bwBet = FileUtil.openOutputFile( NODES_FILE.replace( ".csv", GRANULARITY.toString() + "-BET.csv" ) );
         
+        for( Entry<String,Node> entry : nodes.entrySet() ) {
+            Node node = entry.getValue();
+            bwClo.write( node.getId()  + ";" );
+            bwBet.write( node.getId()  + ";" );
+            ObjectArrayList closenessValues = (ObjectArrayList) node.getAttribute( "closenessValues" );
+            ObjectArrayList betweennessValues = (ObjectArrayList) node.getAttribute( "betweennessValues" );
+            
+            for( int i = 0; i<closenessValues.size(); i++ ) {
+                BigDecimal clo = (BigDecimal) closenessValues.get( i );
+                BigDecimal bet = (BigDecimal) betweennessValues.get( i );
+                bwClo.write( clo + ";" );
+                bwBet.write( bet + ";" );
+            }
+            bwClo.write( "\n" );
+            bwBet.write( "\n" );
+        }
+        
+        bwClo.close();
+        bwBet.close();
+    }
+    
+    
+    public static void updateNetwork() throws Exception {
+        
+        String time;
+        for( time = INIT; DateUtils.checkBefore( time, END ); time = DateUtils.nextPeriod( time, GRANULARITY ) ) {
+            
+            // load edges of the period
+            List<TimestampedEdge> currentEdges = new ArrayList<TimestampedEdge>();
+            networkHandler = new NetworkHandler( graphModel.getDirectedGraph() );
+            
+            for( TimestampedEdge timestampedEdge : orderedEdges ) {
+                String inferiorLimit = time;
+                String superiorLimit = DateUtils.nextPeriod( time, GRANULARITY );
+                if( DateUtils.checkInside( timestampedEdge.getTime(), inferiorLimit, superiorLimit ) ) {
+                    currentEdges.add( timestampedEdge );
+                    networkHandler.updateNetwork( timestampedEdge.getEdge() );
+                }
+            }
+            
+            // compute centralities
+            computeStaticCentralities( time );
+        }
+        
+        // last period
+        List<TimestampedEdge> currentEdges = new ArrayList<TimestampedEdge>();
+        networkHandler = new NetworkHandler( graphModel.getDirectedGraph() );
+        
+        for( TimestampedEdge timestampedEdge : orderedEdges ) {
+            String inferiorLimit = time;
+            String superiorLimit = END;
+            if( DateUtils.checkInside( timestampedEdge.getTime(), inferiorLimit, superiorLimit ) ) {
+                currentEdges.add( timestampedEdge );
+                networkHandler.updateNetwork( timestampedEdge.getEdge() );
+            }
+        }
+        
+        computeStaticCentralities( time );
+        
+    }
+    
+    
+    public static void computeStaticCentralities( String time ) {
+        
+
+        System.out.println( "Computing static centralities... " + time );
         networkHandler.computeDistances();
         
         
         for( Entry<String,Node> entry : nodes.entrySet() ) {
             BigDecimal betweenness = networkHandler.getBetweennessDirect( (String) entry.getValue().getId() );
             BigDecimal closeness = networkHandler.getClosenessDirect( (String) entry.getValue().getId() );
-            System.out.println(  entry.getKey() + ";" + betweenness + ";" + closeness );
+            
+            Node node = entry.getValue();
+            
+            ObjectArrayList closenessValues = (ObjectArrayList) node.getAttribute( "closenessValues" );
+            closenessValues.add( closeness );
+            
+            ObjectArrayList betweennessValues = (ObjectArrayList) node.getAttribute( "betweennessValues" );
+            betweennessValues.add( betweenness );
         }
     }
     
-    public static void updateNetwork() throws Exception {
-        
-        networkHandler = new NetworkHandler( graphModel.getDirectedGraph() );
-        for( Entry<String,Edge> entry : edges.entrySet() ) {
-            
-            networkHandler.updateNetwork( entry.getValue() );
-        }
-    }
+    
 
     
     public static void initializeWorkspace() throws Exception {
@@ -81,7 +177,10 @@ public class StaticCentralities {
         ProjectController pc = Lookup.getDefault().lookup( ProjectController.class );
         pc.newProject();
         graphModel = Lookup.getDefault().lookup( GraphController.class ).getGraphModel();
-
+        
+        graphModel.getNodeTable().addColumn( "closenessValues", ObjectArrayList.class );
+        graphModel.getNodeTable().addColumn( "betweennessValues", ObjectArrayList.class );
+        
         graphModel.getEdgeTable().addColumn( "timeInit", String.class );
         graphModel.getEdgeTable().addColumn( "timeEnd", String.class );
         graphModel.getEdgeTable().addColumn( "genre", String.class );
@@ -93,14 +192,13 @@ public class StaticCentralities {
         loadNodes();
         loadEdges();
         
-        /*for ( Entry< String, Edge > entry : edges.entrySet() ) {
-            EdgeStreamObject edgeStreamObject = new EdgeStreamObject();
-            edgeStreamObject.setEdge( entry.getValue() );
-            edgeStreamObject
-                    .setInitTimestamp( ( Long ) entry.getValue().getAttribute( "timeInit" ) );
-            edgesList.add( edgeStreamObject );
+        for ( Entry< String, Edge > entry : edges.entrySet() ) {
+            TimestampedEdge timestampedEdge = new TimestampedEdge();
+            timestampedEdge.setEdge( entry.getValue() );
+            timestampedEdge.setTime( ( String ) entry.getValue().getAttribute( "timeInit" ) );
+            orderedEdges.add( timestampedEdge );
         }
-        Collections.sort( edgesList );*/
+        Collections.sort( orderedEdges );
     }
     
     public static void loadNodes() throws Exception {
@@ -115,6 +213,8 @@ public class StaticCentralities {
 
             Node node = graphModel.factory().newNode( id );
             node.setLabel( id );
+            node.setAttribute( "closenessValues", new ArrayList<BigDecimal>() );
+            node.setAttribute( "betweennessValues", new ArrayList<BigDecimal>() );
             nodes.put( id, node );
         }
 
