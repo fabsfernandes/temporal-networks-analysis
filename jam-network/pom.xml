@@ -17,37 +17,7 @@
 			<artifactId>preference-module</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.gephi/graph-api -->
-		<dependency>
-			<groupId>org.gephi</groupId>
-			<artifactId>graph-api</artifactId>
-			<version>0.9.2</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.gephi/gephi-toolkit -->
-		<dependency>
-			<groupId>org.gephi</groupId>
-			<artifactId>gephi-toolkit</artifactId>
-			<version>0.9.2</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.gephi/io-importer-api -->
-		<dependency>
-			<groupId>org.gephi</groupId>
-			<artifactId>io-importer-api</artifactId>
-			<version>0.9.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.gephi</groupId>
-			<artifactId>io-importer-plugin</artifactId>
-			<version>0.9.2</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.gephi/statistics-plugin -->
-		<dependency>
-			<groupId>org.gephi</groupId>
-			<artifactId>statistics-plugin</artifactId>
-			<version>0.9.2</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>

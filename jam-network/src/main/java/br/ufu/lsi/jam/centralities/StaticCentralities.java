@@ -12,18 +12,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.gephi.graph.api.Edge;
+import org.gephi.graph.api.EdgeIterable;
 import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
 import org.gephi.project.api.ProjectController;
+import org.gephi.statistics.plugin.GraphDistance;
 import org.openide.util.Lookup;
 
 import br.ufu.lsi.event.NetworkHandler;
-import br.ufu.lsi.event.utils.FileUtil;
 import br.ufu.lsi.jam.model.TimestampedEdge;
 import br.ufu.lsi.jam.utils.DateUtils;
+import br.ufu.lsi.jam.utils.FileUtil;
 import br.ufu.lsi.jam.utils.Granularity;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class StaticCentralities {
 
@@ -31,17 +32,21 @@ public class StaticCentralities {
 
     private static String EDGES_FILE = "/Users/fabiola/Desktop/MLJournal/this-is-my-jam/edges.csv";
     
-    private static final String INIT = "2010-08-26";
+    private static final String INIT = "2011-08-26";
     
-    private static final String END = "2016-08-28";
+    private static final String END = "2015-09-26";
     
-    private static Granularity GRANULARITY = Granularity.YEAR;
+    private static Granularity GRANULARITY = Granularity.MONTH;
 
     public static GraphModel graphModel;
     
     public static NetworkHandler networkHandler;
 
     public static Map< String, Node > nodes = new HashMap< String, Node >();
+    
+    public static Map< String, List<BigDecimal> > nodesCloseness = new HashMap< String, List<BigDecimal> >();
+    
+    public static Map< String, List<BigDecimal> > nodesBetweenness = new HashMap< String, List<BigDecimal> >();
 
     public static Map< String, Edge > edges = new HashMap< String, Edge >();
     
@@ -90,12 +95,12 @@ public class StaticCentralities {
             Node node = entry.getValue();
             bwClo.write( node.getId()  + ";" );
             bwBet.write( node.getId()  + ";" );
-            ObjectArrayList closenessValues = (ObjectArrayList) node.getAttribute( "closenessValues" );
-            ObjectArrayList betweennessValues = (ObjectArrayList) node.getAttribute( "betweennessValues" );
+            List<BigDecimal> closenessValues = nodesCloseness.get( node.getId() );
+            List<BigDecimal> betweennessValues = nodesBetweenness.get( node.getId() );
             
             for( int i = 0; i<closenessValues.size(); i++ ) {
-                BigDecimal clo = (BigDecimal) closenessValues.get( i );
-                BigDecimal bet = (BigDecimal) betweennessValues.get( i );
+                BigDecimal clo = closenessValues.get( i );
+                BigDecimal bet = betweennessValues.get( i );
                 bwClo.write( clo + ";" );
                 bwBet.write( bet + ";" );
             }
@@ -110,6 +115,7 @@ public class StaticCentralities {
     
     public static void updateNetwork() throws Exception {
         
+        
         String time;
         for( time = INIT; DateUtils.checkBefore( time, END ); time = DateUtils.nextPeriod( time, GRANULARITY ) ) {
             
@@ -121,13 +127,20 @@ public class StaticCentralities {
                 String inferiorLimit = time;
                 String superiorLimit = DateUtils.nextPeriod( time, GRANULARITY );
                 if( DateUtils.checkInside( timestampedEdge.getTime(), inferiorLimit, superiorLimit ) ) {
+                    
                     currentEdges.add( timestampedEdge );
                     networkHandler.updateNetwork( timestampedEdge.getEdge() );
+                    
                 }
             }
             
             // compute centralities
             computeStaticCentralities( time );
+            
+            // clear current network
+            for( TimestampedEdge te : currentEdges ) {
+                networkHandler.removeOldEdge( te.getEdge() );
+            }
         }
         
         // last period
@@ -150,23 +163,24 @@ public class StaticCentralities {
     
     public static void computeStaticCentralities( String time ) {
         
-
         System.out.println( "Computing static centralities... " + time );
+        
         networkHandler.computeDistances();
-        
-        
+       
         for( Entry<String,Node> entry : nodes.entrySet() ) {
+            
             BigDecimal betweenness = networkHandler.getBetweennessDirect( (String) entry.getValue().getId() );
             BigDecimal closeness = networkHandler.getClosenessDirect( (String) entry.getValue().getId() );
             
             Node node = entry.getValue();
             
-            ObjectArrayList closenessValues = (ObjectArrayList) node.getAttribute( "closenessValues" );
+            List<BigDecimal> closenessValues = nodesCloseness.get( node.getId() );
             closenessValues.add( closeness );
             
-            ObjectArrayList betweennessValues = (ObjectArrayList) node.getAttribute( "betweennessValues" );
+            List<BigDecimal> betweennessValues = nodesBetweenness.get( node.getId() );
             betweennessValues.add( betweenness );
         }
+        
     }
     
     
@@ -177,9 +191,6 @@ public class StaticCentralities {
         ProjectController pc = Lookup.getDefault().lookup( ProjectController.class );
         pc.newProject();
         graphModel = Lookup.getDefault().lookup( GraphController.class ).getGraphModel();
-        
-        graphModel.getNodeTable().addColumn( "closenessValues", ObjectArrayList.class );
-        graphModel.getNodeTable().addColumn( "betweennessValues", ObjectArrayList.class );
         
         graphModel.getEdgeTable().addColumn( "timeInit", String.class );
         graphModel.getEdgeTable().addColumn( "timeEnd", String.class );
@@ -213,8 +224,13 @@ public class StaticCentralities {
 
             Node node = graphModel.factory().newNode( id );
             node.setLabel( id );
-            node.setAttribute( "closenessValues", new ArrayList<BigDecimal>() );
-            node.setAttribute( "betweennessValues", new ArrayList<BigDecimal>() );
+
+            List<BigDecimal> closenessValues = new ArrayList<BigDecimal>();
+            nodesCloseness.put( id, closenessValues );
+            
+            List<BigDecimal> betweennessValues = new ArrayList<BigDecimal>();
+            nodesBetweenness.put( id, betweennessValues );
+            
             nodes.put( id, node );
         }
 
