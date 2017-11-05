@@ -58,6 +58,26 @@ public class NetworkHandler {
         
     }
     
+    
+    public void removeOldEdge( Edge edge ) {
+        
+            Node source = edge.getSource();
+            Node target = edge.getTarget();
+            
+            directedGraph.removeEdge( edge );
+            if( getDegree( (String) source.getId() ) == 0 ) {
+                directedGraph.removeNode( source );
+            }
+            if( !source.getId().equals( target.getId() ) ) {
+                if( getDegree( (String) target.getId() ) == 0 ) {
+                    directedGraph.removeNode( target );
+                }
+            }
+        
+        
+    }
+    
+    
     public int removeOldEdges( Long minimumTimestamp ) {
         
         List<Edge> edgesToBeRemoved = new ArrayList<Edge>();
@@ -172,6 +192,10 @@ public class NetworkHandler {
         
         Double betweenness = (Double) directedGraph.getNode( nodeId).getAttribute( GraphDistance.BETWEENNESS );
         //BigDecimal bigDecimalBetweenness = BigDecimal.valueOf(betweenness).setScale(7, RoundingMode.HALF_UP);
+        
+        if( betweenness.isNaN() )
+            return new BigDecimal( 0.0 );
+        
         BigDecimal bigDecimalBetweenness = BigDecimal.valueOf(betweenness);
         return bigDecimalBetweenness;
     }
@@ -187,7 +211,9 @@ public class NetworkHandler {
     }
     
     
-    
+    public void clearGraph() {
+        directedGraph.clear();
+    }
     
     
 
