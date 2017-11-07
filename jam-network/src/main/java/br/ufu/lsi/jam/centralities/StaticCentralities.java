@@ -32,7 +32,7 @@ public class StaticCentralities {
 
     private static String EDGES_FILE = "/Users/fabiola/Desktop/MLJournal/this-is-my-jam/edges.csv";
     
-    private static final String INIT = "2011-08-26";
+    private static final String INIT = "2012-08-26";
     
     private static final String END = "2015-09-26";
     
