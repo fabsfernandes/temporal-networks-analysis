@@ -1,8 +1,10 @@
 package br.ufu.lsi.jam.preferences;
 
+import java.io.BufferedWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.ufu.lsi.event.utils.FileUtil;
 import br.ufu.lsi.jam.utils.DateUtils;
 import br.ufu.lsi.jam.utils.Granularity;
 import br.ufu.lsi.preference.BTG;
@@ -14,6 +16,8 @@ public class PreferenceChangeDetectorJam {
     private static final String END = "2015-09-26";
     
     private static final Granularity GRANULARITY = Granularity.YEAR;
+    
+    private static String USERS_PREF_CHANGES_FILE = "/Users/fabiola/Desktop/MLJournal/this-is-my-jam/users-CHANGES.csv";
     
     
     public static void main( String ... args ) throws Exception {
@@ -35,6 +39,8 @@ public class PreferenceChangeDetectorJam {
     // main engine to process each user
     public static void engine() throws Exception {
         
+        StringBuilder sb = new StringBuilder();
+        
         // list of users' jams grouped by users, timestamp 
         List<User> users = BuildUserPreferences.users;
         
@@ -47,11 +53,15 @@ public class PreferenceChangeDetectorJam {
             if( !user.userId.equals( previousUser.userId ) ) {
                 
                 // process
-                System.out.print( "Processing user: " + previousUser.userId );
-                processUser( currentUserJams );
-                System.out.println();
-                
+                if( previousUser.userId != null ) {
+                    sb.append( previousUser.userId );
+                    //bw.write( previousUser.userId );
+                    processUser( currentUserJams, sb );
+                    sb.append( "\n" );
+                    //bw.write( "\n" );
+                }
                 currentUserJams.clear();
+                
 
             } else {
                 currentUserJams.add( user );
@@ -63,11 +73,14 @@ public class PreferenceChangeDetectorJam {
             previousUser.userId = user.userId;
             
         }
+        BufferedWriter bw = FileUtil.openOutputFile( USERS_PREF_CHANGES_FILE.replace( ".csv", "-" + GRANULARITY.toString() + ".csv" ) );
+        bw.write( sb.toString() );
+        bw.close();
     }
     
     
     // process preference changes based on granularity
-    public static void processUser( List<User> userJams ) {
+    public static void processUser( List<User> userJams, StringBuilder sb ) throws Exception {
         
         BTGJam previousBTG = null;
         BTGJam currentBTG = null;
@@ -95,11 +108,15 @@ public class PreferenceChangeDetectorJam {
             aggregateBTG.execute();
             
             if( aggregateBTG.hasCycle() ) {
-                System.out.print( ";1" );
+                //System.out.print( ";1" );
+                sb.append( ";1" );
+                //bw.write( ";1" );
                  //changes.add( 1 );
              } else {
-                 System.out.print( ";0" );
-                // changes.add( 0 );
+                 //System.out.print( ";0" );
+                 sb.append( ";0" );
+                 //bw.write( ";0" );
+                 // changes.add( 0 );
              }
              
              // slides
