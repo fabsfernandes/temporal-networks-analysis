@@ -9,24 +9,26 @@ import java.util.Map.Entry;
 import org.gephi.graph.api.DirectedGraph;
 import org.gephi.graph.api.Edge;
 import org.gephi.graph.api.EdgeIterable;
+import org.gephi.graph.api.Graph;
 import org.gephi.graph.api.Node;
 import org.gephi.graph.api.UndirectedGraph;
 import org.gephi.statistics.plugin.GraphDistance;
 
 public class NetworkHandler {
     
-    DirectedGraph directedGraph;
+    //DirectedGraph directedGraph;
     //UndirectedGraph directedGraph;
+    Graph directedGraph;
     
     public NetworkHandler( DirectedGraph directedGraph ) {
         this.directedGraph = directedGraph;   
     }
     
-    /*public NetworkHandler( UndirectedGraph undirectedGraph ) {
+    public NetworkHandler( UndirectedGraph undirectedGraph ) {
         this.directedGraph = undirectedGraph;
         
         
-    }*/
+    }
     
     public void computeDistances() {
         GraphDistance distance = new GraphDistance();
