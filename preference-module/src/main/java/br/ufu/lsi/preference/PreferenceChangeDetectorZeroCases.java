@@ -14,8 +14,10 @@ import br.ufu.lsi.preference.utils.DateUtil;
 
 public class PreferenceChangeDetectorZeroCases {
     
-    private static String NODES_FILE = "/Users/fabiola/Desktop/LearnStream/dataset/bipartite/nodes";
-    private static String EDGES_FILE = "/Users/fabiola/Desktop/LearnStream/dataset/bipartite/edges";
+   //private static String NODES_FILE = "/Users/fabiola/Desktop/LearnStream/dataset/bipartite/nodes";
+    //private static String EDGES_FILE = "/Users/fabiola/Desktop/LearnStream/dataset/bipartite/edges";
+    private static String NODES_FILE = "/Users/fabiola/Desktop/LearnStream/dataset/synthetic/nodes";
+    private static String EDGES_FILE = "/Users/fabiola/Desktop/LearnStream/dataset/synthetic/edges";
     
     private NetworkHandler networkHandler;
     
@@ -51,7 +53,11 @@ public class PreferenceChangeDetectorZeroCases {
         main.initializeWorkspace( Main.HOMOGENOUS );
         main.loadStreamToMainMemory( EDGES_FILE, NODES_FILE, Main.HOMOGENOUS );
         PreferenceChangeDetectorZeroCases preferenceChangeDetector = new PreferenceChangeDetectorZeroCases( main.graphModel.getDirectedGraph(), main.nodes );
+        
+        long init = System.currentTimeMillis();
         preferenceChangeDetector.preferenceDetector( main.edgesList, NODEID );
+        long end = System.currentTimeMillis()-init;
+        System.out.println( end );
     }
     
     public void preferenceDetector( List<EdgeStreamObject> edgeStream, String nodeId ) {

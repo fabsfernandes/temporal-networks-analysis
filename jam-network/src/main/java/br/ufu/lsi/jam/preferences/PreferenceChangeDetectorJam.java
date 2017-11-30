@@ -47,6 +47,8 @@ public class PreferenceChangeDetectorJam {
         User previousUser = new User();
         List<User> currentUserJams = new ArrayList<User>();
         
+        long init = System.currentTimeMillis();
+        
         for( User user : users ) {
             
             // end of user registers
@@ -73,6 +75,10 @@ public class PreferenceChangeDetectorJam {
             previousUser.userId = user.userId;
             
         }
+        
+        long end = System.currentTimeMillis() - init;
+        System.out.println( end );
+        
         BufferedWriter bw = FileUtil.openOutputFile( USERS_PREF_CHANGES_FILE.replace( ".csv", "-" + GRANULARITY.toString() + ".csv" ) );
         bw.write( sb.toString() );
         bw.close();
