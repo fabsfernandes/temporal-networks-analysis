@@ -14,6 +14,12 @@ public enum Granularity {
           return "MONTH";
         }
     },
+    QUARTER_YEAR {
+        @Override
+        public String toString() {
+          return "TRIMESTER";
+        }
+    },
     SEMESTER{
         @Override
         public String toString() {

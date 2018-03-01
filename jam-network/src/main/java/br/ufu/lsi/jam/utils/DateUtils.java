@@ -2,6 +2,7 @@ package br.ufu.lsi.jam.utils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 
 
@@ -68,6 +69,39 @@ public class DateUtils {
         }
          
         return newLd.toString();
+    }
+    
+    public static int getNumberOfTimeSteps( String inferiorLimit, String superiorLimit, Granularity granularity ) {
+        return (int) (long) getPeriod( superiorLimit, granularity, inferiorLimit );
+    }
+    
+    public static long getPeriod( String current, Granularity granularity, String inferiorLimit ) {
+        
+        LocalDate ldCurrent = LocalDate.parse( current, formatter );
+        LocalDate ldInferiorLimit = LocalDate.parse( inferiorLimit, formatter );
+        
+        long time = 0;
+        switch( granularity ) {
+                    
+            case DAY:
+                time = ldInferiorLimit.until( ldCurrent, ChronoUnit.DAYS );
+                break;
+            case MONTH:
+                time = ldInferiorLimit.until( ldCurrent, ChronoUnit.MONTHS );
+                break;
+            case QUARTER_YEAR:
+                time = ldInferiorLimit.until( ldCurrent, ChronoUnit.MONTHS );
+                time = time/3;
+                break;
+            case SEMESTER:
+                time = ldInferiorLimit.until( ldCurrent, ChronoUnit.MONTHS );
+                time = time/6;
+                break;
+            case YEAR:
+                time = ldInferiorLimit.until( ldCurrent, ChronoUnit.YEARS );
+                break;
+        }
+        return time+1;
     }
 
 }
