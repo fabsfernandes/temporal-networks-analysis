@@ -27,11 +27,12 @@ public class BuildArtistsNetwork {
     
     private static final String INFERIOR_LIMIT = "2011-08-26";
     private static final String SUPERIOR_LIMIT = "2015-09-26";
-    private static final Granularity GRANULARITY = Granularity.DAY;
+    private static final Granularity GRANULARITY = Granularity.QUARTER_YEAR;
 
-    private static final double WEIGHT_THRESHOLD = 0.0;
+    private static final double WEIGHT_THRESHOLD = 20.0;
+    private static final double POPULARITY_THRESHOLD = 200;
     
-    private static Set<String> uniqueArtists = new HashSet<String>();
+    private static Map<String,Integer> uniqueArtists = new HashMap<String,Integer>();
     
     private static Set<String> uniqueUsers = new HashSet<String>();
     
@@ -53,7 +54,55 @@ public class BuildArtistsNetwork {
         buildEdges();
         printEdges();
         
-        printDyNetVisFormat();
+        //printDyNetVisFormat();
+        
+        //filterByPopularityDyNetVis();
+    }
+    
+    public static void filterByPopularityDyNetVis() throws Exception {
+        
+        List<Artist> artists = new ArrayList<Artist>();
+        
+        // map artists
+        Map<String,Integer> mapArtists = new HashMap<String,Integer>();
+        int id = 1;
+        for( Entry<String,Integer> entry : uniqueArtists.entrySet() ) {
+            String artist = entry.getKey();
+            Integer popularity = entry.getValue();
+            mapArtists.put( artist, id++ );
+            artists.add( new Artist(artist, popularity, id) );
+        }
+        Collections.sort( artists );
+        
+        // map popular artists
+        Map<String,Integer> mapPopularArtists = new HashMap<String,Integer>();
+        for( int i = 0; i<POPULARITY_THRESHOLD; i++ ) {
+            
+            Artist artist = artists.get( i );
+            mapPopularArtists.put( artist.artist, artist.id );
+            
+            System.out.println( artist.artist + "," + artist.id + "," + artist.popularity );
+        }
+        
+        // print artists
+        BufferedWriter bw = FileUtil.openOutputFile( EDGES_ARTIST_DYNETVIS.replace( ".csv", "-" + GRANULARITY + "-POP" +  POPULARITY_THRESHOLD + ".csv" ) );
+        bw.write( "idArt1 idArt2 time weight\n" );
+        for( int time = 1; time < edgesListByTime.length; time++ ) {
+            Map<String,Edge> edges = edgesListByTime[time];
+            if( edges != null ) {
+                for( Entry<String,Edge> entry : edges.entrySet() ) {
+                    Edge edge = entry.getValue();
+                    if( edge.weight > WEIGHT_THRESHOLD ) {
+                        Integer artist1Id = mapPopularArtists.get( edge.source );
+                        Integer artist2Id = mapPopularArtists.get( edge.target );
+                        if( artist1Id != null && artist2Id != null )
+                            bw.write( artist1Id + " " + artist2Id + " " + edge.time + " " + edge.weight + "\n" );
+                    }
+                }
+            }
+        }
+        bw.close();
+        
     }
     
     public static void printDyNetVisFormat() throws Exception {
@@ -63,8 +112,10 @@ public class BuildArtistsNetwork {
         Map<String,Integer> mapArtists = new HashMap<String,Integer>();
         BufferedWriter bwMap = FileUtil.openOutputFile( MAP_ARTISTS );
         int id = 1;
-        for( String artist : uniqueArtists ) {
-            bwMap.write( artist + "," + id + "\n" );
+        for( Entry<String,Integer> entry : uniqueArtists.entrySet() ) {
+            String artist = entry.getKey();
+            Integer popularity = entry.getValue();
+            bwMap.write( artist + "," + id + "," + popularity + "\n" );
             mapArtists.put( artist, id++ );
         }
         bwMap.close();
@@ -77,7 +128,7 @@ public class BuildArtistsNetwork {
         bwMapTimes.close();
         
         BufferedWriter bw = FileUtil.openOutputFile( EDGES_ARTIST_DYNETVIS.replace( ".csv", "-" + GRANULARITY + ".csv" ) );
-        bw.write( "idArt1;idArt2;time;weight\n" );
+        bw.write( "idArt1 idArt2 time weight\n" );
         for( int time = 1; time < edgesListByTime.length; time++ ) {
             Map<String,Edge> edges = edgesListByTime[time];
             if( edges != null ) {
@@ -260,7 +311,12 @@ public class BuildArtistsNetwork {
                 artists.add( artist );
                 
                 // statistics only
-                uniqueArtists.add( artist );
+                Integer popularity;
+                if( (popularity = uniqueArtists.get( artist )) == null ) {
+                    popularity = 0;
+                    uniqueArtists.put( artist, popularity );
+                }
+                uniqueArtists.put( artist, popularity+1 );
                 uniqueUsers.add( userId );
                 uniqueTimes.put( time, creationDate );
             }
@@ -284,5 +340,28 @@ class Edge {
     String getEdgeId() {
         return source + "-" + target + "-" + time;
     }
+}
+
+class Artist implements Comparable<Artist> {
+    
+    String artist;
+    Integer popularity;
+    Integer id;
+
+    public Artist( String artist, Integer popularity, Integer id ) {
+        this.artist = artist;
+        this.popularity = popularity;
+        this.id = id;
+    }
+    
+    @Override
+    public int compareTo( Artist o ) {
+        if( popularity < o.popularity )
+            return 1;
+        if( popularity > o.popularity )
+            return -1;                   
+        return 0;
+    }
+    
 }
 
