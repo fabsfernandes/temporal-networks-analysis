@@ -27,9 +27,9 @@ public class BuildArtistsNetwork {
     
     private static final String INFERIOR_LIMIT = "2011-08-26";
     private static final String SUPERIOR_LIMIT = "2015-09-26";
-    private static final Granularity GRANULARITY = Granularity.QUARTER_YEAR;
+    private static final Granularity GRANULARITY = Granularity.DAY;
 
-    private static final double WEIGHT_THRESHOLD = 20.0;
+    private static final double WEIGHT_THRESHOLD = 0.0;
     private static final double POPULARITY_THRESHOLD = 200;
     
     private static Map<String,Integer> uniqueArtists = new HashMap<String,Integer>();
@@ -52,11 +52,11 @@ public class BuildArtistsNetwork {
         
         loadJams();
         buildEdges();
-        printEdges();
+        //printEdges();
         
         //printDyNetVisFormat();
         
-        //filterByPopularityDyNetVis();
+        filterByPopularityDyNetVis();
     }
     
     public static void filterByPopularityDyNetVis() throws Exception {
@@ -85,8 +85,8 @@ public class BuildArtistsNetwork {
         }
         
         // print artists
-        BufferedWriter bw = FileUtil.openOutputFile( EDGES_ARTIST_DYNETVIS.replace( ".csv", "-" + GRANULARITY + "-POP" +  POPULARITY_THRESHOLD + ".csv" ) );
-        bw.write( "idArt1 idArt2 time weight\n" );
+        //BufferedWriter bw = FileUtil.openOutputFile( EDGES_ARTIST_DYNETVIS.replace( ".csv", "-" + GRANULARITY + "-POP" +  POPULARITY_THRESHOLD + ".csv" ) );
+        //bw.write( "idArt1 idArt2 time weight\n" );
         for( int time = 1; time < edgesListByTime.length; time++ ) {
             Map<String,Edge> edges = edgesListByTime[time];
             if( edges != null ) {
@@ -96,12 +96,13 @@ public class BuildArtistsNetwork {
                         Integer artist1Id = mapPopularArtists.get( edge.source );
                         Integer artist2Id = mapPopularArtists.get( edge.target );
                         if( artist1Id != null && artist2Id != null )
-                            bw.write( artist1Id + " " + artist2Id + " " + edge.time + " " + edge.weight + "\n" );
+                            ;
+                           // bw.write( artist1Id + " " + artist2Id + " " + edge.time + " " + edge.weight + "\n" );
                     }
                 }
             }
         }
-        bw.close();
+        //bw.close();
         
     }
     
